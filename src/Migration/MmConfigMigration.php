@@ -28,9 +28,7 @@ final class MmConfigMigration extends AbstractMigration
 
     public function shouldRun(): bool
     {
-        $schemaManager = method_exists($this->connection, 'createSchemaManager') ?
-            $this->connection->createSchemaManager() :
-            $this->connection->getSchemaManager();
+        $schemaManager = $this->connection->createSchemaManager();
 
         if ($schemaManager->tablesExist(['tl_dk_mmenu_config'])) {
             return false;
@@ -87,9 +85,7 @@ final class MmConfigMigration extends AbstractMigration
             'ALTER TABLE tl_module ADD dk_mmenuConfig INT UNSIGNED DEFAULT 0 NOT NULL',
         );
 
-        $schemaManager = method_exists($this->connection, 'createSchemaManager') ?
-            $this->connection->createSchemaManager() :
-            $this->connection->getSchemaManager();
+        $schemaManager = $this->connection->createSchemaManager();
 
         if ($schemaManager->tablesExist(['tl_dk_mmenu_config', 'tl_module'])) {
             $result = $this->connection->executeQuery("SELECT * FROM `tl_module` WHERE `type` LIKE 'mmenu%'")->fetchAllAssociative();
@@ -122,7 +118,7 @@ final class MmConfigMigration extends AbstractMigration
                 $config['keyboardNavigation'] = (int) ($module['dk_mmenuKeyboardNavigation'] ?? 0);
                 $config['keyboardNavigationEnhance'] = (int) ($module['dk_mmenuKeyboardNavigationEnhance'] ?? 0);
 
-                $stmt = $this->connection->prepare(
+                $this->connection->executeStatement(
                     'INSERT INTO tl_dk_mmenu_config (
                             `title`,
                             `tstamp`,
@@ -176,8 +172,8 @@ final class MmConfigMigration extends AbstractMigration
                             :keyboardNavigation,
                             :keyboardNavigationEnhance
                         )',
+                    $config,
                 );
-                $stmt->executeQuery($config);
                 $configId = (int) $this->connection->lastInsertId();
 
                 $this->connection->executeStatement(
