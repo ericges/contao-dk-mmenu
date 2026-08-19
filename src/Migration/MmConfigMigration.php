@@ -121,10 +121,7 @@ final class MmConfigMigration extends AbstractMigration
                 $this->connection->insert('tl_dk_mmenu_config', $config);
                 $configId = (int) $this->connection->lastInsertId();
 
-                $this->connection->executeStatement(
-                    'UPDATE `tl_module` SET `dk_mmenuConfig` = ? WHERE id = ?',
-                    [$configId, $module['id']],
-                );
+                $this->connection->update('tl_module', ['dk_mmenuConfig' => $configId], ['id' => $module['id']]);
             }
         }
 
